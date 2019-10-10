@@ -19,9 +19,20 @@ class StarChatClient:
         self.version = version
 
     def authenticate(self, user: str, password: str) -> None:
+        """
+        Set credentials for authentication to StarChat
+        :param user: user name
+        :param password: password
+        :return: None
+        """
         self.session.auth = (user, password)
+        pass
 
     def check_service(self) -> bool:
+        """
+        Check connection to StarChat
+        :return: True if connection to starChat returned status code 200, False otherwise
+        """
         response = self.session.get(self.address)
         try:
             assert response.status_code == 200
@@ -39,18 +50,39 @@ class StarChatClient:
         return response.json()
 
     def index_exists(self, index_name: str) -> bool:
+        """
+        Check if the index is present on StarChat
+        :param index_name: name of the index
+        :return: True if index already present, False otherwise
+        """
         response = self.session.get('{}/{}/index_management'.format(self.address, index_name))
         return response.json()['check']
 
     def index_delete(self, index_name: str):
+        """
+        Delete index from StarChat
+        :param index_name: name opf the index to be deleted
+        :return: StarChat response
+        """
         response = self.session.delete('{}/{}/index_management'.format(self.address, index_name))
         return response
 
     def index_create(self, index_name: str):
+        """
+        Create index in StarChat
+        :param index_name: name of the index to be created
+        :return: StarChat response
+        """
         response = self.session.post('{}/{}/index_management/create'.format(self.address, index_name))
         return response
 
     def load_decision_table(self, index_name: str, json: dict):
+        """
+        Load a single state to StarChat
+        :param index_name: name of the StarChat index
+        :param json:
+        :return: StarChat response
+        """
         if self.version == '4.2':
             response = self.session.post('{}/{}/decisiontable'.format(self.address, index_name),
                                          json=json)
@@ -93,7 +125,11 @@ class StarChatClient:
             return response
 
     def decision_table_dump(self, index_name):
-
+        """
+        Get the decision table loaded for a StarChat index
+        :param index_name: name of the index
+        :return: dict containing the decision table
+        """
         response = self.session.get('{}/{}/decisiontable?dump=true'.format(self.address, index_name))
         return response.json()
 
@@ -126,6 +162,14 @@ class StarChatClient:
             return None
 
     def get_next_response(self, index_name: str, text: str, conversation_id: str = '42', threshold: float = 0.01):
+        """
+        Get answer from StarChat (see `/<index_name>/get_next_response` API in StarChat documentation)
+        :param index_name: name of the StarChat index
+        :param text: text sent to StarChat
+        :param conversation_id: conversation identifier
+        :param threshold: threshold used to filter StarChat answers
+        :return: json with StarChat output
+        """
         if self.version == '4.2':
             body = {
                 "conversation_id": conversation_id,
