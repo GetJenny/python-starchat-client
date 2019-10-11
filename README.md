@@ -27,7 +27,7 @@ Configure Elasticsearch performing the operations described in the StarChat docu
 
 To import the package and setup the client, open a python console and type
 ```
->>> from py_starchat.StarChatClient import StarChatClient
+>>> from py_starchat.starchat_client import StarChatClient
 >>> sc_client = StarChatClient(url = 'http://localhost',
 ...                            port = '8888',
 ...                            version='5.1')
