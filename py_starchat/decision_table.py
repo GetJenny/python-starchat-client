@@ -3,19 +3,46 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def get_major_version(version: str) -> str:
+    return version.split('.')[0]
+
+
+def change_dict(my_dict: dict, to_replace: dict) -> None:
+    """
+    Utility function to change all keys in a nested dictionary
+    :param my_dict: dictionary to be modified. Note that the dictionary given as argument is modified in place.
+    :param to_replace: dictionary containing the keys to be modified, given as {old_key_name: new_key_name, ...}
+    :return: None
+    """
+    if type(my_dict) == list:
+        for el in my_dict:
+            change_dict(el, to_replace)
+    elif type(my_dict) == dict:
+        for key, value in my_dict.items():
+            if key in to_replace.keys():
+                new_key = to_replace[key]
+            else:
+                new_key = key
+            my_dict[new_key] = my_dict.pop(key)
+            change_dict(value, to_replace)
+    else:
+        pass
+
+
 class DecisionTable:
     """Class to extract informations from and about a StarChat decision table"""
 
-    def __init__(self, json_table, version='4.2'):
+    def __init__(self, json_table: dict, version='4.2'):
         self.dec_table = json_table
         self.states = [hit['document']['state'] for hit in json_table['hits']]
         self.analyzers = dict()
         self.queries = dict()
         try:
-            assert version in ['4.2', '5.1']
+            assert get_major_version(version) in ['4', '5']
         except AssertionError:
             logger.critical('Unsupported version {}'.format(version))
         self.version = version
+        self.version_major = get_major_version(version)
 
     def read_analyzers(self):
         """
@@ -148,33 +175,49 @@ class DecisionTable:
         modified_dec_table = dict()
         modified_dec_table['hits'] = new_hits
         modified_dec_table['total'] = len(new_hits)
-        if self.version == '5.1':
+        if self.version_major == '5':
             modified_dec_table['maxScore'] = self.dec_table['maxScore']
-        elif self.version == '4.2':
+        elif self.version_major == '4':
             modified_dec_table['max_score'] = self.dec_table['max_score']
         return modified_dec_table
-    
-    def to_version(self, version: str):
-        """
-        
-        :param version: 
-        :return: 
-        """
-        _version = version.split('.')[0]
-        try:
-            assert _version in ['4', '5']
-        except AssertionError:
-            logger.error(' Version {} not supported. Accepted output versions are 4.x and 5.x'.format(version))
 
-        
+    def to_version(self, out_version: str):
+        """
+        Convert decision table in roder to be compatible with a different StarChat version
+        :param out_version: the output decision table will be compatible with the out_version version of StarChat
+        :return: DecisionTable object with decision table in format compatible with the desired StarChat version
+        """
+        v4_to_v5 = {
+            'max_score': 'maxScore',
+            'state_data': 'stateData',
+            'success_value': 'successValue',
+            'failure_value': 'failureValue',
+            'execution_order': 'executionOrder',
+            'action_input': 'actionInput',
+            'max_state_count': 'maxStateCount'
+        }
+        out_version_major = get_major_version(out_version)
+        try:
+            assert out_version_major in ['4', '5']
+        except AssertionError:
+            logger.error(' Version {} not supported. Accepted output versions are 4.x and 5.x'.format(out_version))
+        if out_version_major == self.version_major:
+            return self.dec_table
+        else:
+            dec_table_out = copy.deepcopy(self.dec_table)
+            if out_version_major == '5':  # convert from version 4 to 5
+                change_dict(dec_table_out, v4_to_v5)
+            else:  # convert from version 5 to 4
+                change_dict(dec_table_out, {v: k for k, v in v4_to_v5.items()})
+            return DecisionTable(json_table=dec_table_out, version=out_version_major)
 
 
 # # TESTING
 # import os
 # import os.path as path
 # import json
-# FOLDER = 'decision_tables'
-# file = os.listdir(FOLDER)[0]
+# FOLDER = '../../data/benchmark-dataset'
+# file = 'index_english_75_a04a9dcf5a524e01b278a085ad2af4d7.json'
 # with open(path.join(FOLDER, file)) as f:
 #     table = json.load(f)
 #
