@@ -1,0 +1,8 @@
+README.md
+setup.py
+py_starchat/StarChatClient.py
+py_starchat/__init__.py
+py_starchat.egg-info/PKG-INFO
+py_starchat.egg-info/SOURCES.txt
+py_starchat.egg-info/dependency_links.txt
+py_starchat.egg-info/top_level.txt
