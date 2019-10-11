@@ -153,6 +153,20 @@ class DecisionTable:
         elif self.version == '4.2':
             modified_dec_table['max_score'] = self.dec_table['max_score']
         return modified_dec_table
+    
+    def to_version(self, version: str):
+        """
+        
+        :param version: 
+        :return: 
+        """
+        _version = version.split('.')[0]
+        try:
+            assert _version in ['4', '5']
+        except AssertionError:
+            logger.error(' Version {} not supported. Accepted output versions are 4.x and 5.x'.format(version))
+
+        
 
 
 # # TESTING

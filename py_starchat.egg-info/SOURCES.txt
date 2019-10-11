@@ -1,5 +1,6 @@
 README.md
 setup.py
+py_starchat/DecisionTable.py
 py_starchat/StarChatClient.py
 py_starchat/__init__.py
 py_starchat.egg-info/PKG-INFO
