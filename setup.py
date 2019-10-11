@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="py_starchat-bmichele",
+    name="py_starchat",
     version="0.0.1",
     author="Michele Boggia",
     author_email="michele.boggia@getjenny.com",
