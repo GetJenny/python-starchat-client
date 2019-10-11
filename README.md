@@ -8,9 +8,7 @@ the conversational engine provided by [GetJenny](https://www.getjenny.com).
 ### Package installation
 To install the package, run the following commands:
 ```
-git clone https://github.com/GetJenny/python-starchat-client.git
-cd python-starchat-client
-pip install dist/py_starchat-*.whl
+pip install -e git+https://github.com/GetJenny/python-starchat-client#egg=py_starchat
 ```
 
 ### StarChat installation
@@ -43,5 +41,5 @@ If something went wrong, you can inspect the StarChat address by typing
 >>> sc_client.address
 ```
 in your python console and copy the address in your browser to check if you are
-able to conect to the StarChat server. If not, refer to the StarChat
+able to connect to the StarChat server. If not, refer to the StarChat
 documentation and make sure that StarChat is running before testing the client.

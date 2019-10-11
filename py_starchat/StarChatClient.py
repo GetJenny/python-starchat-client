@@ -1,6 +1,7 @@
 import json
 import time
 import logging
+import requests
 logger = logging.getLogger(__name__)
 
 
@@ -10,8 +11,6 @@ class StarChatClient:
                  url: str = 'http://localhost',
                  port: str = '8888',
                  version: str = '5.1') -> None:
-
-        import requests
 
         self.address = '{}:{}'.format(url, port)
         self.session = requests.Session()
