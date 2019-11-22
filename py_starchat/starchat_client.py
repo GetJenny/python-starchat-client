@@ -2,7 +2,7 @@ import json
 import time
 import logging
 import requests
-from utilities import get_major_version
+from .utilities import get_major_version
 
 logger = logging.getLogger(__name__)
 

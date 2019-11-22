@@ -1,6 +1,6 @@
 import copy
 import logging
-from utilities import get_major_version
+from .utilities import get_major_version
 
 logger = logging.getLogger(__name__)
 
