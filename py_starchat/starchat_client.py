@@ -2,6 +2,8 @@ import json
 import time
 import logging
 import requests
+from utilities import get_major_version
+
 logger = logging.getLogger(__name__)
 
 
@@ -14,8 +16,9 @@ class StarChatClient:
 
         self.address = '{}:{}'.format(url, port)
         self.session = requests.Session()
-        assert version in ['4.2', '5.1']
+        assert version in ['4.1', '4.2', '5.1']
         self.version = version
+        self.version_major = get_major_version(version)
 
     def authenticate(self, user: str, password: str) -> None:
         """
@@ -55,7 +58,11 @@ class StarChatClient:
         :return: True if index already present, False otherwise
         """
         response = self.session.get('{}/{}/index_management'.format(self.address, index_name))
-        return response.json()['check']
+        if self.version == '4.1':
+            res = response.json()['message'] == 'IndexCheck: state({}.state, true) question({}.question, true) term({}.term, true)'.format(*([index_name] * 3))
+        else:
+            res = response.json()['check']
+        return res
 
     def index_delete(self, index_name: str):
         """
@@ -82,7 +89,7 @@ class StarChatClient:
         :param json:
         :return: StarChat response
         """
-        if self.version == '4.2':
+        if self.version_major == '4':
             response = self.session.post('{}/{}/decisiontable'.format(self.address, index_name),
                                          json=json)
             return response
@@ -101,7 +108,7 @@ class StarChatClient:
                     `check` can be True or False, depending on the status code for each state upload to starchat.
                  when version == 5.1, returns StarChat response
         """
-        if self.version == '4.2':
+        if self.version_major == '4':
             with open(decision_table_path, encoding='utf-8') as f:
                 table = json.load(f)
                 out = dict()
@@ -140,7 +147,7 @@ class StarChatClient:
         :param trials: maximum number of calls to StarChat before giving up if request time out
         :return: int specifying the number of entries that are present in the index
         """
-        if self.version == '4.2':
+        if self.version_major == '4':
             url = '{}/{}/decisiontable_analyzer'.format(self.address, index_name)
             label = 'num_of_entries'
         else:
@@ -169,7 +176,7 @@ class StarChatClient:
         :param threshold: threshold used to filter StarChat answers
         :return: json with StarChat output
         """
-        if self.version == '4.2':
+        if self.version_major == '4':
             body = {
                 "conversation_id": conversation_id,
                 "user_input": {
@@ -205,10 +212,10 @@ class StarChatClient:
 
 
 # # TESTING
-# VERSION = '4.2'
-# if VERSION == '4.2':
+# VERSION = '4.1'
+# if VERSION.split('.')[0] == '4':
 #     TEST_INDEX = 'index_english_test'
-#     DEC_TABLE = '/Users/miche/Documents/projects/decisionTablesQualityCheck/decision_tables/index_english_104_ee6e96db26544f798d319f72724fb463.json'
+#     DEC_TABLE = '/Users/miche/workdir/Documents/projects/decisionTablesQualityCheck/decision_tables/index_english_100_35518858035e47769cdd02cbe3807d2a.json'
 # else:
 #     TEST_INDEX = 'index_getjenny_english_test'
 #     DEC_TABLE = '/Users/miche/Documents/data/log_dump/poas_eng_dec_tab.json'
@@ -216,16 +223,16 @@ class StarChatClient:
 # sc_client.authenticate('admin', 'adminp4ssw0rd')
 # assert sc_client.check_service()
 #
-# if sc_client.version == '4.2':
+# if sc_client.version_major == '4':
 #     assert sc_client.index_create(TEST_INDEX).status_code == 200
-# elif sc_client.version == '5.2':
+# elif sc_client.version_major == '5':
 #     assert sc_client.index_create(TEST_INDEX).status_code == 201
 #
 # assert sc_client.index_exists(TEST_INDEX)
 #
 # out = sc_client.load_decision_table_file(TEST_INDEX, DEC_TABLE)
 #
-# if sc_client.version == '4.2':
+# if sc_client.version_major == '4':
 #     assert all(out.values())
 # elif sc_client.version == '5.1':
 #     assert out.status_code == 200

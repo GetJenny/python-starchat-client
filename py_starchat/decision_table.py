@@ -1,10 +1,8 @@
 import copy
 import logging
+from utilities import get_major_version
+
 logger = logging.getLogger(__name__)
-
-
-def get_major_version(version: str) -> str:
-    return version.split('.')[0]
 
 
 def change_dict(my_dict: dict, to_replace: dict) -> None:
