@@ -162,6 +162,21 @@ class DecisionTable:
                 return state_obj
         return None
 
+    def get_parents(self, my_state):
+        """
+        Get the states from which my_state can be accessed
+        :param my_state: name of the state
+        :return: list of state names from which my_state is accessible
+        """
+        parent_names = []
+        for state_obj in self.states:
+            check_1 = state_obj.success_value == my_state  # check success_values
+            check_2 = state_obj.failure_value == my_state  # check failure_values
+            check_3 = '"' + my_state + '"' in ' '.join([str(val) for val in state_obj.action_input.values()])
+            if any([check_1, check_2, check_3]):
+                parent_names.append(state_obj.state)
+        return parent_names
+
     def get_analyzers(self):
         """
         Get analyzers expressions

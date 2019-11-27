@@ -18,6 +18,7 @@ tmp = StarChatState(starchat_version='4')
 tmp.set_all(table['hits'][0]['document'])
 print(tmp)
 
+# test modified_decision_table()
 dt = DecisionTable(table, version='4')
 modified_table = dt.modified_decision_table()
 new_dt = DecisionTable(modified_table)
@@ -29,3 +30,12 @@ for state_obj in dt.states:
         print(state_name)
         print(new_dt.get_analyzers()[state_name])
         print(dt.get_analyzers()[state_name])
+
+# test get_parents()
+for state_obj in dt.states:
+    state_name = state_obj.state
+    parents = dt.get_parents(state_name)
+    if parents:
+        print()
+        print(state_name)
+        print(parents)
