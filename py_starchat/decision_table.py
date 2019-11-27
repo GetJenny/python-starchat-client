@@ -27,10 +27,13 @@ def change_dict(my_dict: dict, to_replace: dict) -> None:
         pass
 
 
-# TODO: documentation
 class StarChatState:
+    """
+    Objects of this class contain all the information stored in each state of a starChat decision table
+    """
 
-    def __init__(self):
+    def __init__(self, starchat_version: str='4'):
+        self.starchat_version = starchat_version
         self.state = None,
         self.analyzer = None,
         self.queries = None,
@@ -39,50 +42,99 @@ class StarChatState:
         self.bubble = None,
         self.version = None,
         self.execution_order = None,
+        self.action_input = None,
         self.action = None,
         self.max_state_count = None
 
-    def set_state(self, state_name: str):
+    def __str__(self):
+        out = ''
+        out += 'self.state: {}\n'.format(self.state)
+        out += 'self.analyzer: {}\n'.format(self.analyzer)
+        out += 'self.queries: {}\n'.format(self.queries)
+        out += 'self.success_value: {}\n'.format(self.success_value)
+        out += 'self.failure_value: {}\n'.format(self.failure_value)
+        out += 'self.bubble: {}\n'.format(self.bubble)
+        out += 'self.version: {}\n'.format(self.version)
+        out += 'self.execution_order: {}\n'.format(self.execution_order)
+        out += 'self.action_input: {}\n'.format(self.action_input)
+        out += 'self.action: {}\n'.format(self.action)
+        out += 'self.max_state_count: {}'.format(self.max_state_count)
+        return out
+
+    def set_state(self, state_name: str) -> None:
         self.state = state_name
 
-    def set_analyzer(self, analyzer: str):
+    def set_analyzer(self, analyzer: str) -> None:
         self.analyzer = analyzer
 
-    def set_queries(self, queries: list):
+    def set_queries(self, queries: list) -> None:
         self.queries = queries
 
-    def set_success_value(self, success_value: str):
+    def set_success_value(self, success_value: str) -> None:
         self.success_value = success_value
 
-    def set_failure_value(self, failure_value: str):
+    def set_failure_value(self, failure_value: str) -> None:
         self.failure_value = failure_value
 
-    def set_bubble(self, bubble: str):
+    def set_bubble(self, bubble: str) -> None:
         self.bubble = bubble
 
-    def set_version(self, version: int):
+    def set_version(self, version: int) -> None:
         self.version = version
 
-    def set_execution_order(self, exec_order: int):
+    def set_execution_order(self, exec_order: int) -> None:
         self.execution_order = exec_order
 
-    def set_action(self, action: str):
+    def set_action_input(self, action_input: dict) -> None:
+        self.action_input = action_input
+
+    def set_action(self, action: str) -> None:
         self.action = action
 
-    def set_max_state_count(self, max_state_count: int):
+    def set_max_state_count(self, max_state_count: int) -> None:
         self.max_state_count = max_state_count
 
-    def set_all(self, state_specs: dict):
+    def set_all(self, state_specs: dict) -> None:
         self.set_state(state_specs['state'])
         self.set_analyzer(state_specs['analyzer'])
         self.set_queries(state_specs['queries'])
-        self.set_success_value(state_specs['success_value'])
-        self.set_failure_value(state_specs['failure_value'])
         self.set_bubble(state_specs['bubble'])
         self.set_version(state_specs['version'])
-        self.set_execution_order(state_specs['execution_order'])
         self.set_action(state_specs['action'])
-        self.set_max_state_count(state_specs['max_state_count'])
+        if get_major_version(self.starchat_version) == '4':
+            self.set_success_value(state_specs['success_value'])
+            self.set_failure_value(state_specs['failure_value'])
+            self.set_execution_order(state_specs['execution_order'])
+            self.set_action_input(state_specs['action_input'])
+            self.set_max_state_count(state_specs['max_state_count'])
+        elif get_major_version(self.starchat_version) == '5':
+            self.set_success_value(state_specs['successValue'])
+            self.set_failure_value(state_specs['failureValue'])
+            self.set_execution_order(state_specs['executionOrder'])
+            self.set_action_input(state_specs['actionInput'])
+            self.set_max_state_count(state_specs['maxStateCount'])
+        else:
+            logger.error('StarChat Version {} not supported'.format(self.starchat_version))
+
+    def has_keywords(self) -> bool:
+        """
+        Check if the state has keywords in the analyzer expression
+        :return: bool
+        """
+        if 'keyword("' in self.analyzer:
+            return True
+        else:
+            return False
+
+    def has_queries(self) -> bool:
+        """
+        Check if a the state has whisperer's queries
+        :return: bool
+        """
+        if self.queries:
+            return True
+        else:
+            return False
 
 
 # TODO: rewrite DecisionTable class using StarChatState objects
@@ -91,105 +143,53 @@ class DecisionTable:
 
     def __init__(self, json_table: dict, version='4.2'):
         self.dec_table = json_table
-        self.states = [hit['document']['state'] for hit in json_table['hits']]
-        self.analyzers = dict()
-        self.queries = dict()
         try:
             assert get_major_version(version) in ['4', '5']
         except AssertionError:
             logger.critical('Unsupported version {}'.format(version))
         self.version = version
         self.version_major = get_major_version(version)
+        self.states = [StarChatState(starchat_version=self.version) for _ in json_table['hits']]
+        for hit, state_obj in zip(json_table['hits'], self.states):
+            state_obj.set_all(hit['document'])
 
-    def read_analyzers(self):
+    def get_state(self, state_name):
         """
-        Read all analyzer expressions in the decision table.
-        The expressions are accessible in DecisionTable.analyzers (dict)
-        :return:
+        Get the StarChatState object corresponding to a given state name
+        :return: StarChatState object
         """
-        for entry in self.dec_table['hits']:
-            entry = entry['document']
-            self.analyzers[entry['state']] = entry['analyzer']
-        pass
-
-    def read_queries(self):
-        """
-        Read all queries in the decision table.
-        The queries are accessible in DecisionTable.queries (dict)
-        :return:
-        """
-        for entry in self.dec_table['hits']:
-            entry = entry['document']
-            self.queries[entry['state']] = entry['queries']
-        pass
+        for state_obj in self.states:
+            if state_obj.state == state_name:
+                return state_obj
+        return None
 
     def get_analyzers(self):
         """
         Get analyzers expressions
         :return: dict() containing state_name: analyzer_expression pairs
         """
-        if not self.analyzers:
-            logger.info('Running DecisionTable.read_analyzers()')
-            self.read_analyzers()
-        return self.analyzers
+        return {state_obj.state: state_obj.analyzer for state_obj in self.states}
 
     def get_queries(self):
         """
         Get whisperer's queries
         :return: dict() containing state_name: list_of_queries pairs
         """
-        if not self.queries:
-            logger.info('Running DecisionTable.read_queries()')
-            self.read_queries()
-        return self.queries
-
-    def has_keywords(self, state):
-        """
-        Check if a specific state has keywords in the analyzer expression
-        :param state: name of the state
-        :return: bool
-        """
-        if not self.analyzers:
-            logger.info('Running DecisionTable.read_analyzers()')
-            self.read_analyzers()
-        if 'keyword("' in self.analyzers[state]:
-            return True
-        else:
-            return False
-
-    def has_queries(self, state):
-        """
-        Check if a specific state has whisperer's queries
-        :param state: name of the state
-        :return: bool
-        """
-        if not self.queries:
-            logger.info('Running DecisionTable.read_queries()')
-            self.read_queries()
-        if self.queries[state]:
-            return True
-        else:
-            return False
+        return {state_obj.state: state_obj.queries for state_obj in self.states}
 
     def states_with_keywords(self):
         """
         Give the list of states with analyzer expression
         :return: list of bool
         """
-        if not self.analyzers:
-            logger.info('Running DecisionTable.read_analyzers()')
-            self.read_analyzers()
-        return [self.has_keywords(state) for state in self.states]
+        return [state_obj.has_keywords() for state_obj in self.states]
 
     def states_with_queries(self):
         """
         Give the list of states with at least one whisperer's query
         :return: list of bool
         """
-        if not self.queries:
-            logger.info('Running DecisionTable.read_queries()')
-            self.read_queries()
-        return [self.has_queries(state) for state in self.states]
+        return [state_obj.has_queries() for state_obj in self.states]
 
     def modified_analyzer(self, state):
         """
@@ -198,18 +198,21 @@ class DecisionTable:
         :param state: name of the state
         :return: string containing the modified analyzer expression
         """
-        # check if state has analyzer and query
-        if self.has_keywords(state) and self.has_queries(state):
-            out = self.analyzers[state]
+        # get state object
+        state_obj = self.get_state(state)
+        # check if state has both analyzer and query
+        if state_obj.has_keywords() and state_obj.has_queries():
+            out = copy.deepcopy(state_obj.analyzer)  # get original analyzer expression
             out = out.replace('search("{}"), '.format(state), '')
             out = out[out.find('(') + 1: -1]
+            logger.debug('New analyzer expression for state "{}": {}'.format(state, out))
             return out
         else:
             logger.debug(
-                ('State "{}" needs bot analyzer and queries to be modified. Returning original analyzer expression.'
+                ('Skipping state "{}" (needs bot analyzer and queries to be modified). Returning original analyzer.'
                  .format(state))
             )
-            return self.analyzers[state]
+            return state_obj.analyzer
 
     def modified_decision_table(self):
         """
@@ -220,14 +223,14 @@ class DecisionTable:
         """
         logger.info('\nBuilding modified decision table...\n')
         new_hits = []
-        for index, (state, has_analyzer) in enumerate(zip(self.states, self.states_with_keywords())):
-            if not has_analyzer:
-                logger.debug('Skipping state "{}" in decision table (no analyzer expression).'.format(state))
+        for index, state_obj in enumerate(self.states):
+            if not state_obj.has_keywords():
+                logger.debug('Skipping state "{}" in decision table (no keywords).'.format(state_obj.state))
             else:
                 new_hit = copy.deepcopy(self.dec_table['hits'][index])
-                assert new_hit['document']['state'] == state  # check index-state match
+                assert new_hit['document']['state'] == state_obj.state  # check index-state match
                 new_hit['document']['queries'] = []
-                new_hit['document']['analyzer'] = self.modified_analyzer(state)
+                new_hit['document']['analyzer'] = self.modified_analyzer(state_obj.state)
                 new_hits.append(new_hit)
         modified_dec_table = dict()
         modified_dec_table['hits'] = new_hits
@@ -240,7 +243,7 @@ class DecisionTable:
 
     def to_version(self, out_version: str):
         """
-        Convert decision table in roder to be compatible with a different StarChat version
+        Convert decision table in order to be compatible with a different StarChat version
         :param out_version: the output decision table will be compatible with the out_version version of StarChat
         :return: DecisionTable object with decision table in format compatible with the desired StarChat version
         """
