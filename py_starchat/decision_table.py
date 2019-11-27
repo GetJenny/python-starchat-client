@@ -27,6 +27,65 @@ def change_dict(my_dict: dict, to_replace: dict) -> None:
         pass
 
 
+# TODO: documentation
+class StarChatState:
+
+    def __init__(self):
+        self.state = None,
+        self.analyzer = None,
+        self.queries = None,
+        self.success_value = None,
+        self.failure_value = None,
+        self.bubble = None,
+        self.version = None,
+        self.execution_order = None,
+        self.action = None,
+        self.max_state_count = None
+
+    def set_state(self, state_name: str):
+        self.state = state_name
+
+    def set_analyzer(self, analyzer: str):
+        self.analyzer = analyzer
+
+    def set_queries(self, queries: list):
+        self.queries = queries
+
+    def set_success_value(self, success_value: str):
+        self.success_value = success_value
+
+    def set_failure_value(self, failure_value: str):
+        self.failure_value = failure_value
+
+    def set_bubble(self, bubble: str):
+        self.bubble = bubble
+
+    def set_version(self, version: int):
+        self.version = version
+
+    def set_execution_order(self, exec_order: int):
+        self.execution_order = exec_order
+
+    def set_action(self, action: str):
+        self.action = action
+
+    def set_max_state_count(self, max_state_count: int):
+        self.max_state_count = max_state_count
+
+    def set_all(self, state_specs: dict):
+        self.set_state(state_specs['state'])
+        self.set_analyzer(state_specs['analyzer'])
+        self.set_queries(state_specs['queries'])
+        self.set_success_value(state_specs['success_value'])
+        self.set_failure_value(state_specs['failure_value'])
+        self.set_bubble(state_specs['bubble'])
+        self.set_version(state_specs['version'])
+        self.set_execution_order(state_specs['execution_order'])
+        self.set_action(state_specs['action'])
+        self.set_max_state_count(state_specs['max_state_count'])
+
+
+# TODO: rewrite DecisionTable class using StarChatState objects
 class DecisionTable:
     """Class to extract informations from and about a StarChat decision table"""
 
