@@ -137,7 +137,6 @@ class StarChatState:
             return False
 
 
-# TODO: rewrite DecisionTable class using StarChatState objects
 class DecisionTable:
     """Class to extract informations from and about a StarChat decision table"""
 
@@ -270,23 +269,3 @@ class DecisionTable:
             else:  # convert from version 5 to 4
                 change_dict(dec_table_out, {v: k for k, v in v4_to_v5.items()})
             return DecisionTable(json_table=dec_table_out, version=out_version_major)
-
-
-# # TESTING
-# import os
-# import os.path as path
-# import json
-# FOLDER = '../../data/benchmark-dataset'
-# file = 'index_english_75_a04a9dcf5a524e01b278a085ad2af4d7.json'
-# with open(path.join(FOLDER, file)) as f:
-#     table = json.load(f)
-#
-# dt = DecisionTable(table)
-# modified_table = dt.modified_decision_table()
-# new_dt = DecisionTable(modified_table)
-#
-# for state in new_dt.states:
-#     print()
-#     print(state)
-#     print(new_dt.get_analyzers()[state])
-#     print(dt.get_analyzers()[state])
