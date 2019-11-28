@@ -8,8 +8,9 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-FOLDER = path.join(os.environ['DATA_DIR'], 'production_indices/production_indices.2019.11.21')
-file = 'index_english_4_a6c173696326467686ab4fb253015b59.json'
+# FOLDER = path.join(os.environ['DATA_DIR'], 'production_indices/production_indices.2019.11.21')
+FOLDER = '/Users/miche/workdir/Documents/projects/decisionTablesQualityCheck/decision_tables'
+file = 'index_finnish_56_cd3ca2893b634888b56d67dfa318064b.json'
 with open(path.join(FOLDER, file)) as f:
     table = json.load(f)
 
