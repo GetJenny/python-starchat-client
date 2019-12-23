@@ -43,3 +43,10 @@ If something went wrong, you can inspect the StarChat address by typing
 in your python console and copy the address in your browser to check if you are
 able to connect to the StarChat server. If not, refer to the StarChat
 documentation and make sure that StarChat is running before testing the client.
+
+## Repo Content
+
+* `py_starchat/` folder containing package function implementations
+* `schemas/` folder containing examples of inputs (taken from [StarChat documentation](https://app.swaggerhub.com/apis/angleto/StarChat/v5.0#/))
+* `requirements.txt` package requirements
+* `test.py` scratch file to test the package functions, modify to suit your needs
