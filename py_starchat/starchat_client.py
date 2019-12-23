@@ -207,6 +207,48 @@ class StarChatClient:
         else:
             return []
 
+    def get_term(self, index_name: str, terms: list):
+        """
+        Retrieve a list of terms from the terms table
+        :param index_name: name of the index
+        :param terms: list of strings corresponding to terms to be retrieved
+        :return: dict containing starchat output
+        """
+        assert type(terms) == list, 'Argument `terms` should be a list of strings'
+        assert all([type(el) == str for el in terms]), 'Argument `terms` should be a list of strings'
+        body = {"ids": terms}
+        response = self.session.post('{}/{}/term/get'.format(self.address, index_name),
+                                     json=body)
+        return response.json()
+
+    def add_term(self, index_name: str, terms: list):
+        """
+        Index terms in a StarChat index
+        :param index_name: name of the index
+        :param terms: list of dict objects with format as given in schemas/add_term.json
+        :return: dict containing starchat output
+        """
+        assert type(terms) == list, 'Argument `terms` should be a list of json objects'
+        assert all([type(el) == dict for el in terms]), 'Argument `terms` should be a list of json objects'
+        body = {'terms': terms}
+        response = self.session.post('{}/{}/term/index'.format(self.address, index_name),
+                                     json=body)
+        return response.json()
+
+    def delete_term(self, index_name: str, terms: list):
+        """
+        Delete terms in a StarChat index
+        :param index_name: name of the index
+        :param terms: list of strings corresponding to terms to be deleted
+        :return: dict containing starchat output
+        """
+        assert type(terms) == list, 'Argument `terms` should be a list of strings'
+        assert all([type(el) == str for el in terms]), 'Argument `terms` should be a list of strings'
+        body = {'ids': terms}
+        response = self.session.post('{}/{}/term/delete'.format(self.address, index_name),
+                                     json=body)
+        return response.json()
+
     def close(self):
         self.session.close()
 

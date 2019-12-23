@@ -1,0 +1,27 @@
+{
+  "terms": [
+    {
+      "term": "hello",
+      "synonyms": {
+        "hi": 0.6
+      },
+      "antonyms": {
+        "goodbye": 0.3
+      },
+      "tags": "tag1 tag2",
+      "features": {
+        "POS": "name"
+      },
+      "frequencyBase": 410301,
+      "frequencyStem": 601301,
+      "vector": [
+        0,
+        -1,
+        2,
+        1.2,
+        3
+      ],
+      "score": 0.9
+    }
+  ]
+}
