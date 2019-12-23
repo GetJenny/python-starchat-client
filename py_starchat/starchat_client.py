@@ -249,6 +249,20 @@ class StarChatClient:
                                      json=body)
         return response.json()
 
+    def term_distance(self, index_name: str, terms: list):
+        """
+        Compute all the pairwise distances between the listed terms
+        :param index_name: name of the index
+        :param terms: list of strings corresponding to terms to be compared
+        :returns: dict containing starchat output
+        """
+        assert type(terms) == list, 'Argument `terms` should be a list of strings'
+        assert all([type(el) == str for el in terms]), 'Argument `terms` should be a list of strings'
+        body = {'ids': terms}
+        response = self.session.post('{}/{}/term/distance'.format(self.address, index_name),
+                                     json=body)
+        return response.json()
+
     def close(self):
         self.session.close()
 
