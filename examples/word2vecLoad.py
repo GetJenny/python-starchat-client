@@ -32,9 +32,9 @@ if not path.isfile('glove.6B.50d.txt'):
 t0 = time.time()
 with open('glove.6B.50d.txt', 'r') as f:
     for line_count, line in enumerate(f):
-        if line_count >= 1000:
-            break
-        if line_count % 100 == 0:
+        # if line_count >= 1000:
+        #     break
+        if line_count % 1000 == 0:
             print(line_count)
         # get word and vector
         values = line.split()
