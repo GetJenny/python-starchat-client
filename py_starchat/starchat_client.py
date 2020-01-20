@@ -263,6 +263,34 @@ class StarChatClient:
                                      json=body)
         return response.json()
 
+    def get_tokenizers(self, index_name):
+        """
+        Get available tokenizer types
+        :param index_name: name of the index
+        :return: dict containing the tokenizer definitions
+        """
+        response = self.session.get('{}/{}/tokenizers'.format(self.address, index_name))
+        return response.json()
+
+    def tokenize(self, index_name: str, text: str, tokenizer: str = "base"):
+        """
+        Tokenize text
+        :param index_name: name of the index
+        :param text: text to be tokenized
+        :param tokenizer: tokenizer to be used
+        :returns: list containing the tokens
+        """
+        # check tokenizer
+        tokenizers = self.get_tokenizers(index_name)
+        assert tokenizer in tokenizers, 'Tokenizer {} not found for index {}'.format(tokenizer, index_name)
+        # call starchat to tokenize text
+        body = {
+            "tokenizer": tokenizer,
+            "text": text
+        }
+        response = self.session.post('{}/{}/tokenizers'.format(self.address, index_name), json=body)
+        return response.json()['tokens']
+
     def close(self):
         self.session.close()
 
